@@ -1,6 +1,6 @@
-# Auto UX Test
+# Kimdaehe Auto UX Test
 
-- date = 2022/12/22
+- date : 2022/12/22
 
 - summary: front-end UX auto test
 
