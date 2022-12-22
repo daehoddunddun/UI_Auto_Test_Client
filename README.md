@@ -8,6 +8,10 @@
 
 - tool : puppeteer/React/express/postmain
 
+![12312312312123](https://user-images.githubusercontent.com/98578138/209083577-f78354fa-44bf-4ef0-92ac-356b9c4ed862.png)
+
+![screen-recording](https://user-images.githubusercontent.com/98578138/209083605-634d63e9-ff6e-45c2-a6f8-9fd592864992.gif)
+
 ---
 
 # 1. Puppeteer Setting
