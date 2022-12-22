@@ -1,81 +1,57 @@
 const puppeteer = require("puppeteer");
-const cheerio = require("cheerio");
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
-const port = 8080;
+const port = 8081;
 
-/* [api] */
+/* [API Call] */
 app.use(cors());
 
-app.get("/crawling", async (req, res) => {
-  let reqList = req.query;
-  let dataJson = JSON.parse(reqList.testData);
-  let {
-    crawling_channel_type,
-    crawling_keywords,
-    crawling_period_type,
-    crawling_limit,
-  } = dataJson;
+app.get("/", async (req, res) => {
+  await handleLogin();
 
-  await crawling(
-    crawling_channel_type,
-    crawling_keywords,
-    crawling_period_type,
-    crawling_limit
-  );
-
-  res.send(crawlingData);
-  crawlingData = []; //api 데이터 전송 후 배열 초기화
+  res.send("Client Auto Tset Server Connecting");
 });
 
 app.listen(port, () => {
   console.log(`서버가 ${port}로 실행중입니다.`);
 });
 
-/* [crawling] */
-let crawlingData = []; // 크롤링 데이터를 받은 Array
-let crawling = async (potal, crawling_keywords, date, length) => {
+/* [Auto Test] */
+let handleLogin = async () => {
   const browser = await puppeteer.launch({
     headless: false,
     args: ["--window-size=1920,1080"],
   }); // puppeteer 실행 // {headless: false}는 크롤링 과정을 GUI로 확인하기 위해 적용(없어도 이상 x)
 
-  const page = await browser.newPage(); // 신규 page 생성
+  const page = await browser.newPage(); // 신규 browser page 생성
 
   await page.setViewport({
-    width: 1920,
+    width: 1080,
     height: 1080,
-  }); // GUI View 사이즈 지정
+  }); // GUI View 사이즈 지정 - 개발자 도구를 띄울 수 있게 view - width 조정
 
-  switch (potal) {
-    case "naver":
-      await page.goto(
-        `https://search.naver.com/search.naver?where=image&sm=tab_jum&query=${crawling_keywords[0]}`
-      ); //수집채널1-Naver 키워드 검색창으로 이동
-      await page.waitForSelector("._listImage"); // * 스크랩하려는 태그가 랜더링 완료되기 전까지 기다린다.
-      break;
-    case "daum":
-      await page.goto(
-        `https://search.daum.net/search?w=img&nil_search=btn&DA=NTB&enc=utf8&q=${crawling_keywords[0]}`
-      ); //수집채널2-Daum = 키워드 검색창으로 이동
-      await page.waitForSelector(".thumb_img");
-      break;
-    case "google":
-      await page.goto(
-        `https://www.google.com/search?q=${crawling_keywords[0]}&source=lnms&tbm=isch`
-      ); //수집채널3-Google 키워드 검색창으로 이동
-      await page.waitForSelector(".rg_i.Q4LuWd");
-      break;
-    case "instagram":
-      // await page.goto(
-      //   "https://www.instagram.com/"
-      // ); //수집채널4-Instagram 로그인 시 스크롤 가능한 문제 논의 필요
-      break;
-  }
+  await page.goto("http://localhost:3001", { waitUntil: "networkidle2" }); // 코드 실행할 URL 접속
 
-  await autoScroll(page); // 자동 스크롤 시작(스크롤 시 태그 생성 때문에 추가한 내용)
+  await page.waitForSelector("input"); //SPA 환경에서 해당 태그가 랜더링 전까지 대기
+
+  await page.click("div.contents-search-box > input"); //핵심기능step.1 - 키워드를 입력할 수 있게 Input 태그를 클릭
+  await page.type("div.contents-search-box > input", "고추바삭유림기"); //핵심기능step.2 - 키워드를 입력
+  await page.click("div.contents-search-box > button"); //핵심기능step.3 - 키워드 입력 후 검색 버튼 클릭
+
+  await page.waitForSelector(".user-info-box"); //검색결과 - 유저정보 태그가 생성되기 전까지 대기
+  await page.waitForSelector(".history-item-box"); //검색결과 - 전적정보 태그가 생성되기 전까지 대기
+  await page.waitFor(1000);
+
+  await page.click(".Day-shift-btn > path"); // 부가기능1. - 주간모드 > 야간모드
+  await page.waitFor(500);
+  await page.click(".night-shift-btn > path"); //부가기능2 - 야간모드 > 주간모드
+  await page.waitFor(500);
+  await page.click(".btn-primary"); // 부가기능 3 - menuModal toggle
+  await page.waitFor(500);
+  await page.click(".btn-primary");
+  await page.waitFor(500);
 
   async function autoScroll(page) {
     await page.evaluate(async () => {
@@ -91,66 +67,18 @@ let crawling = async (potal, crawling_keywords, date, length) => {
             clearInterval(timer);
             resolve();
           }
-        }, 100); // distance로 스크롤 내리는 속도를 조절함(100 빠르지만 데이터를 전부 수집 못하는 에러로 length 100정도까지만/ 200권장 / 300 느림)
+        }, 100);
       });
     });
   }
 
-  const content = await page.content(); // * 페이지 컨텐츠 생성한다.
+  await autoScroll(page); // autoScroll down을 통한 컨텐츠 생성 정상 확인
 
-  const $ = cheerio.load(content); // cheerio에 컨트츠를 인자로 넣어준다.
+  await page.evaluate(() => {
+    window.scroll(0, 0);
+  }); // Scroll down 이후 페이지 최상단으로 이동
 
-  switch (potal) {
-    // 수집채널1-Naver 크롤링 css 선택자 지정
-    case "naver":
-      const naverLists = $(
-        "._contentRoot > .photo_group._listGrid > .photo_tile._grid > div > div > .thumb > a "
-      );
-
-      naverLists.each((idx, list) => {
-        const src =
-          $(list).find("img").attr("data-lazy-src") === undefined
-            ? $(list).find("img").attr("src")
-            : $(list).find("img").attr("data-lazy-src");
-        crawlingData.push({ idx, src });
-      }); // 네이버 이미지의 src 가 data-lazy-src 를 참조하는 내용도 있어서 삼항연산자로 통일
-      break;
-
-    case "daum":
-      // 수집채널2-Daum 크롤링 css 선택자 지정
-      const daumLists = $(
-        ".g_comp > #imgColl > .coll_cont > #imgList > .wrap_thumb > a"
-      );
-      daumLists.each((idx, list) => {
-        const src = $(list).find("img").attr("src");
-        crawlingData.push({ idx, src });
-      });
-      break;
-
-    case "google":
-      //수집채널3-Google 크롤링 css 선택자 지정
-      const googleLists = $(
-        "#islrg > .islrc > div > .wXeWr.islib.nfEiy > .bRMDJf.islir"
-      );
-
-      googleLists.each((idx, list) => {
-        const src = $(list).find("img").attr("src");
-        crawlingData.push({ idx, src });
-      });
-      break;
-
-    case "instagram":
-      break;
-  }
-
-  if (crawlingData.length >= 100) {
-    crawlingData.length = 100;
-  } //요청 데이터의 length
-
-  /* 부가기능 */
-  // await page.click("._listImage"); //부가 기능 - 해당 태그를 클릭
-  // await page.screenshot({ path: "screen.png" }); // 부가 기능 - 스크린샷 찍기
-  // console.dir(crawlingData.length, { maxArrayLength: null }); // 수집한 전체 데이터
+  await page.waitFor(1000);
 
   await browser.close(); // 브라우저 종료
 };
