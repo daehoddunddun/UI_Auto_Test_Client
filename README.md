@@ -22,7 +22,7 @@
 2-5. page.waitFor() --- delay setting @[seconds(number)]
 2-6. page.evaluate() --- page scroll @[window.scroll~~~]
 
-# 3. sub
+# 3. Sub
 
 3-1. await browser.close() --- browserClose
 3-2. await page.screenshot({ path: }) --- screenshot
