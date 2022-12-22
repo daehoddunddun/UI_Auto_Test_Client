@@ -1,7 +1,5 @@
 # Kimdaeho Auto UX Test
 
-English no answer 🤣
-
 - date : 2022/12/22
 
 - summary: front-end UX auto test
