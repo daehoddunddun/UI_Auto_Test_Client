@@ -2,7 +2,7 @@
 
 - date = 2022/12/22
 - summary: front-end UX auto test
-- flow : 1.server execution > 2.api call > 3.puppeteer Browser Connected > 4.puppeteer UX Auto test 5.Server disconnect
+- flow : 1.server execution > 2.api call > 3.Browser Connected > 4.UX Auto test 5.Server disconnect
 - tool : puppeteer/React/express/postmain
 
 ---
