@@ -39,6 +39,7 @@
 3-2. await page.screenshot({ path: }) --- screenshot
 
 ---------------
+*Sample
 
 ![13223312](https://user-images.githubusercontent.com/98578138/209084045-db8f4c3b-6261-43a2-835e-8815c6186aa1.png)
 
