@@ -10,6 +10,12 @@
 
 ---
 
+![13223312](https://user-images.githubusercontent.com/98578138/209084045-db8f4c3b-6261-43a2-835e-8815c6186aa1.png)
+
+
+![screen-recording](https://user-images.githubusercontent.com/98578138/209083605-634d63e9-ff6e-45c2-a6f8-9fd592864992.gif)
+
+
 # 1. Puppeteer Setting
 
 1-1. puppeteer.launch({ headless: , args: }) --- puppeteer execution @headless : [true/false], args: ["--window-size=1920,1080"]
@@ -38,10 +44,3 @@
 
 3-2. await page.screenshot({ path: }) --- screenshot
 
----------------
-*Sample
-
-![13223312](https://user-images.githubusercontent.com/98578138/209084045-db8f4c3b-6261-43a2-835e-8815c6186aa1.png)
-
-
-![screen-recording](https://user-images.githubusercontent.com/98578138/209083605-634d63e9-ff6e-45c2-a6f8-9fd592864992.gif)
